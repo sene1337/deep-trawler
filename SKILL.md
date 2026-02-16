@@ -22,6 +22,8 @@ bash scripts/trawl.sh "your query here" slug-name
 
 Saves raw JSON to `logs/trawl-<slug>-raw.json` automatically. **Do not truncate responses.**
 
+**Parallel mode (3+ sub-queries):** When there are 3+ sub-queries, spawn a coordinator sub-agent per query using `sessions_spawn`. Each sub-agent runs trawl.sh + source extraction independently. The parent waits for all results, then synthesizes. This cuts wall-clock time by 2-3x.
+
 ### 3. Source Dive
 Extract citations from each response. For the top 5-8 most relevant sources:
 - `web_fetch` each URL
@@ -53,5 +55,12 @@ Target: 2000-5000 words. Dense, not padded.
 ## Cost Awareness
 Each deep research call: ~$0.50-1.00. A 3-query trawl = ~$1.50-3.00. Always state expected cost before running. Get confirmation for >$5 total.
 
-## Output Location
-All reports go to `docs/research/<slug>.md` in the workspace.
+## Output Locations
+
+| Artifact | Location | In git? |
+|----------|----------|---------|
+| Raw JSON results | `logs/trawl-<slug>-raw.json` | ❌ No — gitignored, ephemeral |
+| Source extracts | `logs/trawl-<slug>-sources.md` | ❌ No — gitignored, ephemeral |
+| Synthesis report | `docs/research/<slug>.md` | ✅ Yes — this is the durable artifact |
+
+**Never commit raw JSON to git.** The synthesis is what matters. If you need raw data again, re-run the trawl — that's what the skill is for. Raw output is a build artifact, not a source file.
